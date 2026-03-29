@@ -2,25 +2,24 @@ import { useState, useRef} from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function CameraScreen() {
+export default function CameraScreen({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [photo, setPhoto] = useState(null);
   const cameraRef = useRef(null);
   
   async function takePhoto() {
-   console.log('button farted');
-   console.log('cameraRef.current', cameraRef.current);
-  
    if (cameraRef.current) {
-    console.log('Taking photos...');
     const result = await cameraRef.current.takePictureAsync();
     setPhoto(result.uri);
-    console.log('photo taken:', result.uri);
-    } else {
-      console.log('cameraRef is null - camera not ready!');
+    console.log('Photo taken:', result.uri);
+    navigation.navigate('Preview', { photo: result.uri });
       }
   }
-    
+  
+  function retakePhoto() {
+    setPhoto(null);
+  }
+
   if (!permission) {
     return <View />;
   }
@@ -44,7 +43,6 @@ export default function CameraScreen() {
       <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
        <Text style={styles.captureText}>Cheese</Text>
       </TouchableOpacity>
-      {photo && <Text style={styles.photoPath}>{photo}</Text>}
     </View>
   );
 }
@@ -55,6 +53,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   camera: {
+    flex: 1,
+  },
+  preview: {
     flex: 1,
   },
   message: {
@@ -90,12 +91,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     alignSelf:'center',
   },
-  photoPath: {
+  retakeButton: {
+    backgroundColor: '#ffffff',
+    padding: 14,
+    borderRadius: 8,
+  },
+  useButton: {
+    backgroundColor: '#4CAF50',
+    padding: 14,
+    borderRadius: 8,
+  },
+  previewButtons: {
     position: 'absolute',
-    bottom: 120,
-    color: '#fff',
-    fontSize: 10,
-    paddingHorizontal: 10,
-    textAlign: 'center',
+    bottom: 40,
+    flexDirection: 'row',
+    gap: 16,
+    alignSelf: 'center',
   },
 });
