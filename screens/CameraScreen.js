@@ -2,7 +2,7 @@ import { useState, useRef} from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function CameraScreen({ navigation }) {
+export default function CameraScreen({ navigation, route }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [photo, setPhoto] = useState(null);
   const cameraRef = useRef(null);
@@ -11,8 +11,8 @@ export default function CameraScreen({ navigation }) {
    if (cameraRef.current) {
     const result = await cameraRef.current.takePictureAsync();
     setPhoto(result.uri);
-    console.log('Photo taken:', result.uri);
-    navigation.navigate('Preview', { photo: result.uri });
+    const existingPages = route.params?.pages || [];
+    navigation.navigate('Preview', { pages: [...existingPages, result.uri]});
       }
   }
   
@@ -39,7 +39,7 @@ export default function CameraScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing="back" ref={cameraRef} />
+      <CameraView style={styles.camera} facing="back" ref={cameraRef} autofocus="on" />
       <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
        <Text style={styles.captureText}>Cheese</Text>
       </TouchableOpacity>

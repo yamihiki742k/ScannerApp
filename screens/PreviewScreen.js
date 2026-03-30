@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { concatColorMatrices, grayscale, contrast, saturate, ColorMatrix } from 'react-native-color-matrix-image-filters';
 
 export default function PreviewScreen({ route, navigation }) {
-  const { photo } = route.params;
+  const { pages } = route.params;
+  const photo = pages[pages.length - 1];
   const [activeFilter, setActiveFilter] = useState(grayscale(0));
 
   function applyFilter(filterType) {
@@ -42,6 +43,9 @@ export default function PreviewScreen({ route, navigation }) {
         <TouchableOpacity style={styles.retakeButton} onPress={() => navigation.goBack()}>
           <Text style={styles.buttonText}>Another Cheese?</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('Camera', { pages: pages })}>
+          <Text style={styles.buttonText}>Add Cheese</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.useButton} onPress={() => console.log('Use photo:', photo)}>
           <Text style={styles.buttonText}>Use This Cheese</Text>
         </TouchableOpacity>
@@ -62,22 +66,40 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 40,
     flexDirection: 'row',
-    gap: 16,
-    alignSelf: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    width: '100%',
+    alignItems: 'stretch',
    },
    retakeButton: {
     backgroundColor: '#fff',
     padding: 14,
     borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
    },
    useButton: {
     backgroundColor: '#4CAF50',
     padding: 14,
     borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+   },
+   addButton: {
+    backgroundColor: '#2196F3',
+    padding: 14,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
    },
    buttonText: {
     color: '#000',
     fontWeight: 'bold',
+    textAlign: 'center',
+    flexShrink: 1,
    },
      filterButtons: {
     position: 'absolute',
