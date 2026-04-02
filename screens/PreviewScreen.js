@@ -1,24 +1,62 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useState } from 'react';
 import { concatColorMatrices, grayscale, contrast, saturate, ColorMatrix } from 'react-native-color-matrix-image-filters';
+import { generatePDF } from 'react-native-html-to-pdf';
+import * as Sharing from 'expo-sharing';
 
 export default function PreviewScreen({ route, navigation }) {
   const { pages } = route.params;
   const photo = pages[pages.length - 1];
   const [activeFilter, setActiveFilter] = useState(grayscale(0));
+  const [activeFilterName, setActiveFilterName] = useState('original');
 
   function applyFilter(filterType) {
   if (filterType === 'grayscale') {
     setActiveFilter(grayscale(1));
+    setActiveFilterName('grayscale');
     } else if (filterType === 'contrast') {
     setActiveFilter(contrast(2));
+    setActiveFilterName('contrast');
     } else if (filterType === 'magic') {
     setActiveFilter(concatColorMatrices(grayscale(1), contrast(2), saturate(0)));
+    setActiveFilterName('magic');
     } else if (filterType === 'original') {
     setActiveFilter(grayscale(0));
+    setActiveFilterName('original');
     }
   }
 
+  async function exportPDF() {
+    const cssFilter = {
+      original: 'none',
+      grayscale: 'grayscale(1)',
+      contrast: 'contrast(2)',
+      magic: 'grayscale(1) contrast(2) saturate(0)',
+    }[activeFilterName];
+
+    const imagesHtml = pages.map( pageUri => `
+      <div style="page-break-after: always;">  
+      <img src="${pageUri}" style="filter: ${cssFilter}; width: 100%; height: 100vh; object-fit: contain;" />
+      </div>
+      `).join('\n');
+
+    const html = `
+      <html>
+        <body style="margin:0; padding:0;">
+          ${imagesHtml}
+        </body>
+      </html>
+      `;
+
+    const result = await generatePDF({
+      html,
+      fileName: 'ScannerApp_' + Date.now(),
+      directory: 'Documents',
+    });
+
+    console.log('Full result:', JSON.stringify(result));
+    await Sharing.shareAsync('file://' + result.filePath);
+  }
 
   return (
     <View style={styles.container}>
@@ -46,7 +84,7 @@ export default function PreviewScreen({ route, navigation }) {
         <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('Camera', { pages: pages })}>
           <Text style={styles.buttonText}>Add Cheese</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.useButton} onPress={() => console.log('Use photo:', photo)}>
+        <TouchableOpacity style={styles.useButton} onPress={exportPDF}>
           <Text style={styles.buttonText}>Use This Cheese</Text>
         </TouchableOpacity>
       </View>
